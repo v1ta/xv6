@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "signal.h"
 
 int
 sys_fork(void)
@@ -100,5 +101,24 @@ sys_halt(void)
   char *p = "Shutdown";
   for( ; *p; p++)
     outw(0xB004, 0x2000);
+  return 0;
+}
+
+int
+sys_signal(void)
+{
+  int signum;
+  int handler;
+  
+  if (argint(0,&signum) < 0){
+    return -1;
+  }
+  
+  if (argint(1,&handler) < 0) {
+    return -1;
+  }
+
+  
+  proc->handlers[signum]= (int*)handler;
   return 0;
 }
