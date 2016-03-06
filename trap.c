@@ -83,9 +83,11 @@ trap(struct trapframe *tf)
     uint old_eax  = tf->eax;
     uint old_edx  = tf->edx;
     uint old_ecx  = tf->ecx;
+    uint old = (int) proc->old;
+
 
     asm volatile (
-      "movl %1, (%%eax)\t \n" //addr of restorer -> stack
+      "movl %1, (%%eax)\t \n" //addr of old vals -> stack
       "movl $0, 4(%%eax)\t \n"//SIGFPE -> stack
       "movl %2, 8(%%eax)\t \n"//edx -> stack
       "movl %3, 12(%%eax)\t \n"//ecx -> stack
@@ -94,13 +96,13 @@ trap(struct trapframe *tf)
       "addl $24, %%eax\t \n" //grow stack
       :  : 
       "r" (old_esp),
-      "r" (restorer), 
+      "r" (old), 
       "r" (old_edx), 
       "r" (old_ecx), 
       "r" (old_eax), 
       "r" (old_eip));
-    
-    tf->eip = proc->handlers[0];
+
+    tf->eip = (int) proc->handlers[0];
     break;
   //PAGEBREAK: 13
   default:
