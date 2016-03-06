@@ -110,7 +110,7 @@ sys_signal(void)
   int signum;
   int handler;
   signum = -2;
-  handler_addr = 0;
+  handler = 0;
   if (argint(0,&signum) < -1){
     return -1;
   } else if (argint(1,&handler) < 0) {
