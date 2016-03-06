@@ -87,6 +87,7 @@ trap(struct trapframe *tf)
 
 
     asm volatile (
+      ;
       "movl %1, (%%eax)\t \n" //addr of old vals -> stack
       "movl $0, 4(%%eax)\t \n"//SIGFPE -> stack
       "movl %2, 8(%%eax)\t \n"//edx -> stack
