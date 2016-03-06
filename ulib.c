@@ -105,8 +105,4 @@ memmove(void *vdst, void *vsrc, int n)
   return vdst;
 }
 
-int 
-signal(int signum, sighandler_t handler)
-{
-return 0;
-}
+
