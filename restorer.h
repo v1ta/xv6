@@ -1,3 +1,4 @@
+/*
 void restorer(int);
 int __attribute__((used, section(".text\n\t"
 			".globl	restorer\n\t"
@@ -11,3 +12,4 @@ int __attribute__((used, section(".text\n\t"
 			"ret\n\t"
 			".size	restorer, .-restorer\n\t"
 			".section .data"))) restorera;
+*/

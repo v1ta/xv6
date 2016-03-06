@@ -78,28 +78,30 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_DIVIDE:
-      ;
-      uint old_eip  = tf->eip +4;
-      uint old_esp  = tf->esp;
-      uint old_eax  = tf->eax;
-      uint old_edx  = tf->edx;
-      uint old_ecx  = tf->ecx;
+    uint old_eip  = tf->eip +4;
+    uint old_esp  = tf->esp;
+    uint old_eax  = tf->eax;
+    uint old_edx  = tf->edx;
+    uint old_ecx  = tf->ecx;
 
-   uint restorer  = proc->restorer;
-
-   asm volatile (
-        "movl %1, (%%eax)\t #Put addr of restorer on stack\n"
-        "movl $0, 4(%%eax)\t #Put 0=SIGFPE on stack\n"
-        "movl %2, 8(%%eax)\t #Put edx on stack\n"
-        "movl %3, 12(%%eax)\t #Put ecx on stack\n"
-        "movl %4, 16(%%eax)\t #Put eax on stack\n"
-        "movl %5, 20(%%eax)\t #Put old eip on stack\n"
-        "addl $24, %%eax\t #Expand stack \n"
-        :  : "r" (old_esp), "r" (restorer), "r" (old_edx), "r" (old_ecx), "r" (old_eax), "r" (old_eip));
-
-  tf->eip = proc->handlers[0];
-
-  break;
+    asm volatile (
+      "movl %1, (%%eax)\t \n" //addr of restorer -> stack
+      "movl $0, 4(%%eax)\t \n"//SIGFPE -> stack
+      "movl %2, 8(%%eax)\t \n"//edx -> stack
+      "movl %3, 12(%%eax)\t \n"//ecx -> stack
+      "movl %4, 16(%%eax)\t \n"//eax -> stack
+      "movl %5, 20(%%eax)\t \n"//old eip -> stack
+      "addl $24, %%eax\t \n" //grow stack
+      :  : 
+      "r" (old_esp),
+      "r" (restorer), 
+      "r" (old_edx), 
+      "r" (old_ecx), 
+      "r" (old_eax), 
+      "r" (old_eip));
+    
+    tf->eip = proc->handlers[0];
+    break;
   //PAGEBREAK: 13
   default:
     if(proc == 0 || (tf->cs&3) == 0){
