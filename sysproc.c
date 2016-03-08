@@ -119,3 +119,20 @@ sys_signal(void)
   proc->handlers[signum]= (int*)handler;
   return 0;
 }
+
+int
+sys_alarm(void)
+{
+  int buzz;
+  void (*buzzing) ();
+  
+  if(argint(0,&buzz)<0){
+    return -1;
+  }
+  if(argptr(1,(char**)&buzzing,1)<1){
+    return -1;
+  }
+  proc->alarmbuzz = buzz;
+  proc->alarmbuzzing = buzzing;
+  return 0;
+}
