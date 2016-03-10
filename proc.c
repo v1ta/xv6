@@ -267,25 +267,6 @@ wait(void)
   }
 }
 
-static uint
-set_signal_pending(uint cur_val, int signum)
-{
-  return cur_val | (1 << signum);
-}
-/*
-static uint
-clear_signal_pending(uint cur_val, int signum)
-{
-  return cur_val & ~(1 << signum);
-}
-
-static int
-is_signal_pending(uint cur_val, int signum)
-{
-  return cur_val & (1 << signum);
-}
-*/
-
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.

@@ -7,7 +7,7 @@
 // At a minimum you must define the signal constants themselves
 // as well as a sighandler_t type.
 
-typedef struct
+typedef struct siginfo
 {
   int signum;
 } siginfo_t;
