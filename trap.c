@@ -22,7 +22,7 @@ tvinit(void)
   for(i = 0; i < 256; i++)
     SETGATE(idt[i], 0, SEG_KCODE<<3, vectors[i], 0);
   SETGATE(idt[T_SYSCALL], 1, SEG_KCODE<<3, vectors[T_SYSCALL], DPL_USER);
-  
+
   initlock(&tickslock, "time");
 }
 
@@ -32,15 +32,6 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
-void
-sys_alarm(void)
-{
-  int ticks;
-  if (argint(0, &ticks) < 0) {
-    return;
-  }
-  proc->alarm_ticks = ticks;
-}
 //PAGEBREAK: 41
 void
 trap(struct trapframe *tf)
@@ -62,6 +53,7 @@ trap(struct trapframe *tf)
       ticks++;
       wakeup(&ticks);
       release(&tickslock);
+      proc_tick_alarms();
     }
     lapiceoi();
     break;
@@ -87,7 +79,7 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_DIVIDE:
-    ; 
+    ;
     uint old_eip  = tf->eip +4;
     uint old_esp  = tf->esp;
     uint old_eax  = tf->eax;
@@ -104,12 +96,12 @@ trap(struct trapframe *tf)
       "movl %4, 16(%%eax)\t \n"//eax -> stack
       "movl %5, 20(%%eax)\t \n"//old eip -> stack
       "addl $24, %%eax\t \n" //grow stack
-      :  : 
+      :  :
       "r" (old_esp),
-      "r" (old), 
-      "r" (old_edx), 
-      "r" (old_ecx), 
-      "r" (old_eax), 
+      "r" (old),
+      "r" (old_edx),
+      "r" (old_ecx),
+      "r" (old_eax),
       "r" (old_eip));
 
     tf->eip = (int) proc->handlers[0];
@@ -125,13 +117,13 @@ trap(struct trapframe *tf)
     // In user space, assume process misbehaved.
     cprintf("pid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",
-            proc->pid, proc->name, tf->trapno, tf->err, cpu->id, tf->eip, 
+            proc->pid, proc->name, tf->trapno, tf->err, cpu->id, tf->eip,
             rcr2());
     proc->killed = 1;
   }
 
   // Force process exit if it has been killed and is in user space.
-  // (If it is still executing in the kernel, let it keep running 
+  // (If it is still executing in the kernel, let it keep running
   // until it gets to the regular system call return.)
   if(proc && proc->killed && (tf->cs&3) == DPL_USER)
     exit();
