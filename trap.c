@@ -78,7 +78,7 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_DIVIDE:
-    ;
+    ; 
     uint old_eip  = tf->eip +4;
     uint old_esp  = tf->esp;
     uint old_eax  = tf->eax;

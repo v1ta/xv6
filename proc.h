@@ -11,7 +11,7 @@ struct cpu {
   volatile uint started;       // Has the CPU started?
   int ncli;                    // Depth of pushcli nesting.
   int intena;                  // Were interrupts enabled before pushcli?
-  
+
   // Cpu-local storage variables; see below
   struct cpu *cpu;
   struct proc *proc;           // The currently-running process.
@@ -67,11 +67,12 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int *handlers[24]; 
+  int *handlers[25];
   int *old;                    // vals in vreg before ul sig_handler()
   int alarmbuzz;
-  void (*alarmbuzzing)();
-  
+  int alarm_ticks;
+  //void (*alarmbuzzing)();
+
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -79,3 +80,5 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+
+void proc_tick_alarms();
