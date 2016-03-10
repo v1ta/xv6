@@ -7,6 +7,8 @@
 #include "proc.h"
 #include "spinlock.h"
 
+#define DEFAULT_SIG_HANDLER ((sighandler_t)0xFFFFFFFF)
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -71,8 +73,9 @@ found:
   p->context->eip = (uint)forkret;
 
   p->pending = 0;
-  for(i=0; i<NUMSIG; ++i) {
-    p->sig_handlers[i] = DEFAULT_SIG_HANDLER;
+  int i;
+  for(i=0; i<SIGCOUNT; ++i) {
+    p->handlers[i] = DEFAULT_SIG_HANDLER;
   }
 
   p->alarm_ticks = 0;
