@@ -123,13 +123,13 @@ sys_signal(void)
 
 /* alarm */
 int
-sys_sigalarm(void)
+sys_alarm(void)
 {
   int *time = 0;
   if (argint(0, time) < 0) {
     return -1;
   }
-  *time = (*time) * 500;
+  *time = (*time) * 10;
   if (proc->pending == 0) {
     proc->pending = *time;
   }

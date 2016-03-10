@@ -104,7 +104,8 @@ memmove(void *vdst, void *vsrc, int n)
     *dst++ = *src++;
   return vdst;
 }
-
+/*
 int alarm(int time) {
   return sigalarm(time);
 }
+*/

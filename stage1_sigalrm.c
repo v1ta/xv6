@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
 	alarm(1);
 
-	while(!flag && uptime() < start + 2000);
+	while(!flag && uptime() < start + 1000);
 
 	printf(1, "TEST FAILED: no signal sent.\n");
 	

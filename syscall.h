@@ -22,4 +22,4 @@
 #define SYS_close  21
 #define SYS_halt   22
 #define SYS_signal 23
-#define SYS_sigalarm  24
+#define SYS_alarm  24

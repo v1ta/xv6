@@ -55,6 +55,7 @@ trap(struct trapframe *tf)
   	 for (i = 0; i < NPROC; i++) {
 	     p = (struct proc*) get_process(i);
                if (p && p->pending > 0) {
+                     cprintf("i= %d alarm_ticks= %d pending= %d\n",i,p->alarm_ticks,p->pending); 
 		     p->alarm_ticks++;
 		     if (p->alarm_ticks >= p->pending) {
 			     p->pending = 0;
@@ -65,6 +66,8 @@ trap(struct trapframe *tf)
                              cprintf("&info is %d, info is %d, info.signum is %d\n", &info, info, info.signum); 
 	 		     p->tf->esp -= 8;
 	 		     p->tf->eip = p->handlers[1];
+                             sighandler_t f = (sighandler_t *) p->handlers[1];
+			     f(info);
 		    }
 	    }
 	  }
