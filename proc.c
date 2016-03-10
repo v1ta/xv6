@@ -497,6 +497,7 @@ procdump(void)
   }
 }
 
+/*
 void
 proc_tick_alarms()
 {
@@ -515,4 +516,10 @@ proc_tick_alarms()
     }
   }
   release(&ptable.lock);
+}
+*/
+
+struct proc*
+get_process (int index) {
+  return &ptable.proc[index];
 }

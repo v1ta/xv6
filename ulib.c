@@ -97,7 +97,7 @@ void*
 memmove(void *vdst, void *vsrc, int n)
 {
   char *dst, *src;
-  
+
   dst = vdst;
   src = vsrc;
   while(n-- > 0)
@@ -105,4 +105,6 @@ memmove(void *vdst, void *vsrc, int n)
   return vdst;
 }
 
-
+int alarm(int time) {
+  return alarm(time);
+}

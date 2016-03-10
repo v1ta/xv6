@@ -7,6 +7,7 @@
 #include "x86.h"
 #include "traps.h"
 #include "spinlock.h"
+#include "param.h"
 
 // Interrupt descriptor table (shared by all CPUs).
 struct gatedesc idt[256];
@@ -48,12 +49,27 @@ trap(struct trapframe *tf)
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
+     int i; 
+  	 for (i = 0; i < NPROC; i++) {
+	     p = (struct proc*) get_process(i);
+	     if (p && p->pending > 0) {
+		     p->alarm_ticks++;
+		     if (p->alarm_ticks >= p->pending) {
+			     p->pending = 0;
+			     p->alarm_ticks = 0;
+			     struct siginfo_t info;
+			     info.signum = SIGALRM;
+			     *((siginfo_t*)(proc->tf->esp - 4)) = info;
+	 		     p->tf->esp -= 8;
+	 		     p->tf->eip = p->handlers[1];
+		    }
+	    }
+	  }
     if(cpu->id == 0){
       acquire(&tickslock);
       ticks++;
       wakeup(&ticks);
       release(&tickslock);
-      proc_tick_alarms();
     }
     lapiceoi();
     break;

@@ -121,13 +121,19 @@ sys_signal(void)
 }
 
 /* alarm */
-void
+int
 sys_alarm(void)
 {
-  int ticks;
-  if(argint(0, &ticks) < 0)
-    return;
-  proc->alarm_ticks = ticks;
+  int *time;
+  if (argint(0, time) < 0) {
+    return -1;
+  }
+  *time = (*time) * 1000;
+  if (proc->pending == 0) {
+    proc->pending = *time;
+  }
+  cprintf("pending = %d", *time);
+  return proc->pending - proc->alarm_ticks;
 }
 
 /*
