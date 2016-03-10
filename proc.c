@@ -76,7 +76,7 @@ found:
   p->pending = 0;
   int i;
   for(i=0; i<SIGCOUNT; ++i) {
-    p->handlers[i] = DEFAULT_SIG_HANDLER;
+    p->handlers[i] = (*sighandler_t) DEFAULT_SIG_HANDLER;
   }
 
   p->alarm_ticks = 0;
@@ -265,17 +265,20 @@ wait(void)
   }
 }
 
-static uint set_signal_pending(uint cur_val, int signum)
+static uint
+set_signal_pending(uint cur_val, int signum)
 {
   return cur_val | (1 << signum);
 }
 
-static uint clear_signal_pending(uint cur_val, int signum)
+static uint
+clear_signal_pending(uint cur_val, int signum)
 {
   return cur_val & ~(1 << signum);
 }
 
-static int is_signal_pending(uint cur_val, int signum)
+static int
+is_signal_pending(uint cur_val, int signum)
 {
   return cur_val & (1 << signum);
 }
