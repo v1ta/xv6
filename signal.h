@@ -16,5 +16,6 @@ typedef void (*sighandler_t)(siginfo_t);
 
 #define SIGFPE 0
 #define SIGALRM 1
+#define SIGCOUNT 32
 
 #endif

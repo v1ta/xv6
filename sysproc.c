@@ -119,7 +119,7 @@ sys_signal(void)
   proc->handlers[signum]= (int*)handler;
   return 0;
 }
-
+/*
 int
 sys_alarm(void)
 {
@@ -136,3 +136,4 @@ sys_alarm(void)
   proc->alarmbuzzing = buzzing;
   return 0;
 }
+*/

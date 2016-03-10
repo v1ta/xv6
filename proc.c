@@ -8,7 +8,7 @@
 #include "spinlock.h"
 #include "signal.h"
 
-#define DEFAULT_SIG_HANDLER ((sighandler_t)0xFFFFFFFF)
+#define DEFAULT_SIG_HANDLER ((sighandler_t))
 
 struct {
   struct spinlock lock;
@@ -74,10 +74,12 @@ found:
   p->context->eip = (uint)forkret;
 
   p->pending = 0;
+/*
   int i;
   for(i=0; i<SIGCOUNT; ++i) {
-    p->handlers[i] = (*sighandler_t) DEFAULT_SIG_HANDLER;
+    p->handlers[i] = (struct sighandler_t) DEFAULT_SIG_HANDLER;
   }
+*/
 
   p->alarm_ticks = 0;
 
@@ -270,7 +272,7 @@ set_signal_pending(uint cur_val, int signum)
 {
   return cur_val | (1 << signum);
 }
-
+/*
 static uint
 clear_signal_pending(uint cur_val, int signum)
 {
@@ -282,6 +284,7 @@ is_signal_pending(uint cur_val, int signum)
 {
   return cur_val & (1 << signum);
 }
+*/
 
 //PAGEBREAK: 42
 // Per-CPU process scheduler.

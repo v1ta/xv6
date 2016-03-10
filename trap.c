@@ -32,6 +32,15 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
+void
+sys_alarm(void)
+{
+  int ticks;
+  if (argint(0, &ticks) < 0) {
+    return;
+  }
+  proc->alarm_ticks = ticks;
+}
 //PAGEBREAK: 41
 void
 trap(struct trapframe *tf)

@@ -67,7 +67,7 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int *handlers[25];
+  int *handlers[SIGCOUNT];
   int *old;                    // vals in vreg before ul sig_handler()
   int alarmbuzz;
   int alarm_ticks;
