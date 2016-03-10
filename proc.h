@@ -71,6 +71,7 @@ struct proc {
   int *old;                    // vals in vreg before ul sig_handler()
   int alarmbuzz;
   int alarm_ticks;
+  int pending;
   //void (*alarmbuzzing)();
 
 };
