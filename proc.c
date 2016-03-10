@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "signal.h"
 
 #define DEFAULT_SIG_HANDLER ((sighandler_t)0xFFFFFFFF)
 
