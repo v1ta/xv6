@@ -55,19 +55,43 @@ trap(struct trapframe *tf)
   	 for (i = 0; i < NPROC; i++) {
 	     p = (struct proc*) get_process(i);
                if (p && p->pending > 0) {
-                     cprintf("i= %d alarm_ticks= %d pending= %d\n",i,p->alarm_ticks,p->pending); 
 		     p->alarm_ticks++;
+         //cprintf("alarm_ticks= %d pending= %d\n:",p->alarm_ticks,p->pending);
 		     if (p->alarm_ticks >= p->pending) {
 			     p->pending = 0;
 			     p->alarm_ticks = 0;
-			     struct siginfo info; 
+           /*
+			     struct siginfo info;
 			     info.signum = SIGALRM;
 			     *((siginfo_t*)(proc->tf->esp - 4)) = info;
-                             cprintf("&info is %d, info is %d, info.signum is %d\n", &info, info, info.signum); 
+                             cprintf("&info is %d, info is %d, info.signum is %d\n", &info, info, info.signum);
 	 		     p->tf->esp -= 8;
-	 		     p->tf->eip = p->handlers[1];
-                             sighandler_t f = (sighandler_t *) p->handlers[1];
-			     f(info);
+	 		     p->tf->eip = p->handlers[1];*/
+           uint old_eip  = tf->eip +4;
+           uint old_esp  = tf->esp;
+           uint old_eax  = tf->eax;
+           uint old_edx  = tf->edx;
+           uint old_ecx  = tf->ecx;
+           uint old = (int) p->old;
+
+
+           asm volatile (
+             "movl %1, (%%eax)\t \n" //addr of old vals -> stack
+             "movl $1, 4(%%eax)\t \n"//SIGALRM -> stack
+             "movl %2, 8(%%eax)\t \n"//edx -> stack
+             "movl %3, 12(%%eax)\t \n"//ecx -> stack
+             "movl %4, 16(%%eax)\t \n"//eax -> stack
+             "movl %5, 20(%%eax)\t \n"//old eip -> stack
+             "addl $24, %%eax\t \n" //grow stack
+             :  :
+             "r" (old_esp),
+             "r" (old),
+             "r" (old_edx),
+             "r" (old_ecx),
+             "r" (old_eax),
+             "r" (old_eip));
+
+           tf->eip = (int) p->handlers[1];
 		    }
 	    }
 	  }
@@ -159,4 +183,3 @@ trap(struct trapframe *tf)
   if(proc && proc->killed && (tf->cs&3) == DPL_USER)
     exit();
 }
-
