@@ -70,6 +70,13 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  p->pending = 0;
+  for(i=0; i<NUMSIG; ++i) {
+    p->sig_handlers[i] = DEFAULT_SIG_HANDLER;
+  }
+
+  p->alarm_ticks = 0;
+
   return p;
 }
 
@@ -252,6 +259,21 @@ wait(void)
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
   }
+}
+
+static uint set_signal_pending(uint cur_val, int signum)
+{
+  return cur_val | (1 << signum);
+}
+
+static uint clear_signal_pending(uint cur_val, int signum)
+{
+  return cur_val & ~(1 << signum);
+}
+
+static int is_signal_pending(uint cur_val, int signum)
+{
+  return cur_val & (1 << signum);
 }
 
 //PAGEBREAK: 42
