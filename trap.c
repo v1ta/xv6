@@ -72,7 +72,7 @@ trap(struct trapframe *tf)
            uint old_eax  = tf->eax;
            uint old_edx  = tf->edx;
            uint old_ecx  = tf->ecx;
-           uint old = (int) p->old;
+           uint old = (int) proc->old;
 
 
            asm volatile (

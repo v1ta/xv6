@@ -109,6 +109,7 @@ sys_signal(void)
 {
   int signum;
   int handler;
+  //sighandler_t hander;
   signum = -2;
   handler = 0;
   if (argint(0,&signum) < -1){
@@ -117,7 +118,11 @@ sys_signal(void)
     return -1;
   }
   cprintf("signum = %d\n", signum);
-  proc->handlers[signum]= (int*)handler;
+  if (signum == -1) {
+    proc->old = (int *) handler;
+  } else {
+    proc->handlers[signum]= (int*)handler;
+  }
   return signum;
 }
 
@@ -133,7 +138,7 @@ sys_alarm(void)
   if (proc->pending == 0) {
     proc->pending = *time;
   }
-  cprintf("pending = %d\n", *time);
+  cprintf("pending = %d alarm_ticks=\n", *time,proc->alarm_ticks);
   return proc->pending - proc->alarm_ticks;
 }
 
