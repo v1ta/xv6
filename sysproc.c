@@ -115,7 +115,7 @@ sys_signal(void)
   } else if (argptr(1,(void*)&handler, sizeof(handler)) < 0) {
     return -1;
   }
-  cprintf("signum = %d\n", signum);
+  //cprintf("signum = %d\n", signum);
   if (signum == -1) {
     proc->old = (int *) handler;
   } else {

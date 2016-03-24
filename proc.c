@@ -8,7 +8,7 @@
 #include "spinlock.h"
 #include "signal.h"
 
-#define DEFAULT_SIG_HANDLER ((sighandler_t))
+#define DEFAULT_SIG_HANDLER ((sighandler_t)0XFFFFFFFF)
 
 struct {
   struct spinlock lock;
@@ -86,8 +86,39 @@ found:
   return p;
 }
 
-static uint set_signal_pending(uint cur_val, int signum) {
-  return curr_val | (1 << signum);
+static uint 
+set_signal_pending(uint curr, int signum) {
+  return curr | (1 << signum);
+}
+
+static int
+pending_signal(uint curr, int signum) {
+  return curr & (1 << signum);
+}
+
+static uint clear_pending(uint curr, int signum) {
+  return curr & ~(1 << signum);
+}
+
+sys_sendsig(void) {
+  int pid;
+  int signum;
+  struct proc *p;
+  if (argint(0, &pid) < 0 || argint(1, &signum < 0)) {
+    return -1;
+  }
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) { 
+    if (p->pid == pid) {
+      cprintf("found pid:%d",pid);
+      p->pending = set_signal_pending(p->pending, signum);
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  cprintf("no process w/pid:%d",pid);
+  release(&ptable.lock);
+  return -1; 
 }
 
 //PAGEBREAK: 32
@@ -271,6 +302,35 @@ wait(void)
   }
 }
 
+void
+register_signal(sighandler_t sighandler, int signum) {
+    uint old_eip  = proc->tf->eip +4;
+    uint old_esp  = proc->tf->esp;
+    uint old_eax  = proc->tf->eax;
+    uint old_edx  = proc->tf->edx;
+    uint old_ecx  = proc->tf->ecx;
+    uint old = (int) proc->old;
+
+    asm volatile (
+      "movl %1, (%%eax)\t \n" //addr of old vals -> stack
+      "movl $1, 4(%%eax)\t \n"//SIGALRM -> stack
+      "movl %2, 8(%%eax)\t \n"//edx -> stack
+      "movl %3, 12(%%eax)\t \n"//ecx -> stack
+      "movl %4, 16(%%eax)\t \n"//eax -> stack
+      "movl %5, 20(%%eax)\t \n"//old eip -> stack
+      "addl $24, %%eax\t \n" //grow stack
+      :  :
+      "r" (old_esp),
+      "r" (old),
+      "r" (old_edx),
+      "r" (old_ecx),
+      "r" (old_eax),
+      "r" (old_eip)
+    );
+    proc->tf->eip = (uint)sighandler;
+}
+
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -283,6 +343,7 @@ void
 scheduler(void)
 {
   struct proc *p;
+  int i;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -300,6 +361,18 @@ scheduler(void)
       proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      /*check for signals */
+      for(i = 0; i < 2; i++) {
+        if (pending_signal(p->pending, i)) {
+          //cprintf("found signal=%d",i);
+          p->pending = clear_pending(p->pending, i);
+          if (p->handlers[i] == 0) {
+            //cprintf("registering signal SIGNUM=%d", i);
+            register_signal(p->handlers[i], i);
+            p->pending = clear_pending(p->pending, i);
+          }
+        }
+      }
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
 
@@ -494,7 +567,9 @@ tick_alarms()
     // only twiddle some fields
     if(p->alarm_ticks > 0) {
       p->alarm_ticks--;
+      //cprintf("alarm ticked!\n");
       if(p->alarm_ticks == 0) {
+        //cprintf("alarm is going off!!\n");
         p->pending = set_signal_pending(p->pending, SIGALRM);
       }
     }

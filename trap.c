@@ -52,12 +52,12 @@ trap(struct trapframe *tf)
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
-  	if(cpu->id == 0){
+    if(cpu->id == 0){
       acquire(&tickslock);
       ticks++;
       wakeup(&ticks);
       release(&tickslock);
-			tick_alarms();
+      tick_alarms();
     }
     lapiceoi();
     break;
