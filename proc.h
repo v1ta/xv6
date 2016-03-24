@@ -67,12 +67,11 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int *handlers[2];
+  sighandler_t handlers[2];    // Signal handlers
   int *old;                    // vals in vreg before ul sig_handler()
-  //int alarmbuzz;
-  uint pending; //alarmtime
-  uint alarm_ticks; //alarmcounter
-};
+  int alarm_ticks;
+	uint pending;                // for pending signal
+  };
 
 // Process memory is laid out contiguously, low addresses first:
 //   text
@@ -80,5 +79,5 @@ struct proc {
 //   fixed-size stack
 //   expandable heap
 
-//void proc_tick_alarms();
+void tick_alarms();
 extern struct proc* get_process (int);

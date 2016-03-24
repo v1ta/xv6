@@ -86,6 +86,10 @@ found:
   return p;
 }
 
+static uint set_signal_pending(uint cur_val, int signum) {
+  return curr_val | (1 << signum);
+}
+
 //PAGEBREAK: 32
 // Set up first user process.
 void
@@ -478,12 +482,11 @@ procdump(void)
   }
 }
 
-/*
+
 void
-proc_tick_alarms()
+tick_alarms()
 {
   struct proc *p;
-
   acquire(&ptable.lock);
   // Iterate through all the processes and decrement their alarm ticks
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -498,7 +501,7 @@ proc_tick_alarms()
   }
   release(&ptable.lock);
 }
-*/
+
 
 struct proc*
 get_process (int index) {

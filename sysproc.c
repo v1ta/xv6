@@ -108,55 +108,28 @@ int
 sys_signal(void)
 {
   int signum;
-  int handler;
-  //sighandler_t hander;
-  signum = -2;
-  handler = 0;
+  sighandler_t  handler;
+
   if (argint(0,&signum) < -1){
     return -1;
-  } else if (argint(1,&handler) < 0) {
+  } else if (argptr(1,(void*)&handler, sizeof(handler)) < 0) {
     return -1;
   }
   cprintf("signum = %d\n", signum);
   if (signum == -1) {
     proc->old = (int *) handler;
   } else {
-    proc->handlers[signum]= (int*)handler;
+    proc->handlers[signum] = handler;
   }
-  return signum;
-}
-
-/* alarm */
-int
-sys_alarm(void)
-{
-  int *time = 0;
-  if (argint(0, time) < 0) {
-    return -1;
-  }
-  *time = (*time) * 10;
-  if (proc->pending == 0) {
-    proc->pending = *time;
-  }
-  cprintf("pending = %d alarm_ticks=\n", *time,proc->alarm_ticks);
-  return proc->pending - proc->alarm_ticks;
-}
-
-/*
-int
-sys_alarm(void)
-{
-  int buzz;
-  void (*buzzing) ();
-
-  if(argint(0,&buzz)<0){
-    return -1;
-  }
-  if(argptr(1,(char**)&buzzing,1)<1){
-    return -1;
-  }
-  proc->alarmbuzz = buzz;
-  proc->alarmbuzzing = buzzing;
   return 0;
 }
-*/
+
+void
+sys_alarm(void)
+{
+  int ticks;
+  if(argint(0,&ticks)<0){
+    return;
+  }
+  proc->alarm_ticks = ticks;
+}
