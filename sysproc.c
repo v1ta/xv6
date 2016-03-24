@@ -107,17 +107,22 @@ sys_halt(void)
 int
 sys_signal(void)
 {
-  int signum;
+  int signum = -2;
   sighandler_t  handler;
 
   if (argint(0,&signum) < -1){
     return -1;
+  } 
+  if (signum == -1) {
+    if (argint(1, &handler) < 0) {
+      return -1;
+    }
   } else if (argptr(1,(void*)&handler, sizeof(handler)) < 0) {
     return -1;
   }
-  //cprintf("signum = %d\n", signum);
+  cprintf("adding signum = %d for process:\n", signum, proc->pid);
   if (signum == -1) {
-    proc->old = (int *) handler;
+    proc->trampoline = (int *) handler;
   } else {
     proc->handlers[signum] = handler;
   }

@@ -74,12 +74,12 @@ found:
   p->context->eip = (uint)forkret;
 
   p->pending = 0;
-/*
+
   int i;
-  for(i=0; i<SIGCOUNT; ++i) {
-    p->handlers[i] = (struct sighandler_t) DEFAULT_SIG_HANDLER;
+  for(i=0; i<2; i++) {
+    p->handlers[i] = DEFAULT_SIG_HANDLER;
   }
-*/
+
 
   p->alarm_ticks = 0;
 
@@ -302,14 +302,20 @@ wait(void)
   }
 }
 
+static void
+default_handler(int pid) {
+  cprintf("default handler for process: %d\n", pid);
+}
+
 void
 register_signal(sighandler_t sighandler, int signum) {
+    cprintf("loading stack...");
     uint old_eip  = proc->tf->eip +4;
     uint old_esp  = proc->tf->esp;
     uint old_eax  = proc->tf->eax;
     uint old_edx  = proc->tf->edx;
     uint old_ecx  = proc->tf->ecx;
-    uint old = (int) proc->old;
+    uint trampoline = (uint) proc->trampoline;
 
     asm volatile (
       "movl %1, (%%eax)\t \n" //addr of old vals -> stack
@@ -321,7 +327,7 @@ register_signal(sighandler_t sighandler, int signum) {
       "addl $24, %%eax\t \n" //grow stack
       :  :
       "r" (old_esp),
-      "r" (old),
+      "r" (trampoline),
       "r" (old_edx),
       "r" (old_ecx),
       "r" (old_eax),
@@ -364,12 +370,14 @@ scheduler(void)
       /*check for signals */
       for(i = 0; i < 2; i++) {
         if (pending_signal(p->pending, i)) {
-          //cprintf("found signal=%d",i);
+          cprintf("found signal=%d",i);
           p->pending = clear_pending(p->pending, i);
-          if (p->handlers[i] == 0) {
-            //cprintf("registering signal SIGNUM=%d", i);
+          if (p->handlers[i] != DEFAULT_SIG_HANDLER) {
+            cprintf("registering signal SIGNUM=%d", i);
             register_signal(p->handlers[i], i);
             p->pending = clear_pending(p->pending, i);
+          } else {
+            default_handler(proc->pid);
           }
         }
       }
@@ -393,7 +401,227 @@ sched(void)
   int intena;
 
   if(!holding(&ptable.lock))
-    panic("sched ptable.lock");
+    /*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+/*
+  char* addr = uva2ka(proc->pgdir, (char*)proc->tf->esp);
+  if ((proc->tf->esp & 0xFFF) == 0) {
+    panic("esp_offset == 0");
+  }
+    // open a new frame 
+  *(int*)(addr + ((proc->tf->esp - 4) & 0xFFF)) = proc->tf->eip;
+  proc->tf->esp -= 4;
+    // update eip 
+  proc->tf->eip = (uint)sighandler;
+  */
+panic("sched ptable.lock");
   if(cpu->ncli != 1)
     panic("sched locks");
   if(proc->state == RUNNING)

@@ -89,7 +89,7 @@ trap(struct trapframe *tf)
     uint old_eax  = tf->eax;
     uint old_edx  = tf->edx;
     uint old_ecx  = tf->ecx;
-    uint old = (int) proc->old;
+    uint trampoline = proc->trampoline;
 
 
     asm volatile (
@@ -102,7 +102,7 @@ trap(struct trapframe *tf)
       "addl $24, %%eax\t \n" //grow stack
       :  :
       "r" (old_esp),
-      "r" (old),
+      "r" (trampoline),
       "r" (old_edx),
       "r" (old_ecx),
       "r" (old_eax),

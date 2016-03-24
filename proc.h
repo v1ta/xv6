@@ -68,7 +68,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   sighandler_t handlers[2];    // Signal handlers
-  int *old;                    // vals in vreg before ul sig_handler()
+  int *trampoline;                    // vals in vreg before ul sig_handler()
   int alarm_ticks;
 	uint pending;                // for pending signal
   };
