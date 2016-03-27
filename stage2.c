@@ -14,6 +14,7 @@ int main(void)
 {
     register int ecx asm ("%ecx");
 
+    // signum of -1 is a hack we use to wrap the trampoline function 
     signal(-1, (uint) trampoline);
     signal(SIGALRM, handle_signal);
 

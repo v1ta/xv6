@@ -308,6 +308,7 @@ default_handler(int pid) {
   cprintf("default handler for process: %d\n", pid);
 }
 
+// Old way of sending the alarm (pre stage 2)
 void
 register_signal(sighandler_t sighandler, int signum) {
     cprintf("loading stack...");
@@ -572,9 +573,7 @@ tick_alarms()
   acquire(&ptable.lock);
   // Iterate through all the processes and decrement their alarm ticks
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    // Even if p is UNUSED (or any other state), no harm is done here since we
-    // only twiddle some fields
-    if(p->alarm_ticks > 0) 
+    if(p->alarm_ticks > 0)
       p->alarm_ticks--;
   }
   release(&ptable.lock);

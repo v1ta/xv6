@@ -83,64 +83,23 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_DIVIDE:
-    if (proc->handlers[0] >= 0) {
+    ;
     siginfo_t info = { .signum = SIGFPE };
     uint oldeip = proc->tf->eip;
     if (proc->skip == 1) {
       proc->tf->eip = proc->tf->eip + 4;
       return;
-    } 
-      proc->tf->eip = (uint) proc->handlers[0];
-
-      *((uint*) (proc->tf->esp - 4)) = oldeip;
-      *((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
-      *((uint*) (proc->tf->esp - 12)) = proc->tf->ecx;
-      *((uint*) (proc->tf->esp - 16)) = proc->tf->edx;
-      *((siginfo_t*)(proc->tf->esp - 20)) = info;  
-      *((uint*) (proc->tf->esp - 24)) = proc->trampoline;
-      proc->tf->esp -= 24;
-
-      return;
     }
-   
-    cprintf("pid %d %s: trap %d err %d on cpu %d "
-            "eip 0x%x addr 0x%x--kill proc\n",
-            proc->pid, proc->name, tf->trapno, tf->err, cpu->id, tf->eip, 
-            rcr2());
-    proc->killed = 1;
+    proc->tf->eip = (uint) proc->handlers[0];
+    *((uint*) (proc->tf->esp - 4)) = oldeip;
+    *((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
+    *((uint*) (proc->tf->esp - 12)) = proc->tf->ecx;
+    *((uint*) (proc->tf->esp - 16)) = proc->tf->edx;
+    *((siginfo_t*)(proc->tf->esp - 20)) = info;
+    *((uint*) (proc->tf->esp - 24)) = proc->trampoline;
+    proc->tf->esp -= 24;
 
-    if (proc->killed)
-      exit();
     return;
-      /* cprintf("heya!!");
-      uint old_eip  = tf->eip +4;
-      uint old_esp  = tf->esp;
-      uint old_eax  = tf->eax;
-      uint old_edx  = tf->edx;
-      uint old_ecx  = tf->ecx;
-      uint trampoline = proc->trampoline;
-
-
-      asm volatile (
-        "movl %1, (%%eax)\t \n" //addr of old vals -> stack
-        "movl $0, 4(%%eax)\t \n"//SIGFPE -> stack
-        "movl %2, 8(%%eax)\t \n"//edx -> stack
-        "movl %3, 12(%%eax)\t \n"//ecx -> stack
-        "movl %4, 16(%%eax)\t \n"//eax -> stack
-        "movl %5, 20(%%eax)\t \n"//old eip -> stack
-        "addl $24, %%eax\t \n" //grow stack
-        :  :
-        "r" (old_esp),
-        "r" (trampoline),
-        "r" (old_edx),
-        "r" (old_ecx),
-        "r" (old_eax),
-        "r" (old_eip));
-
-      tf->eip = (int) proc->handlers[0];
-    }
-    */
-    break;
   //PAGEBREAK: 13
   default:
     if(proc == 0 || (tf->cs&3) == 0){
@@ -168,23 +127,21 @@ trap(struct trapframe *tf)
   if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
     yield();
 
-    if(proc && proc->pending == 1){
-		  if (proc->alarm_ticks == 0) {
-			  proc->pending = 0;
-			  siginfo_t info = (siginfo_t) { .signum = SIGALRM };
-			  uint oldeip = proc->tf->eip;
-			  proc->tf->eip = (uint) proc->handlers[1];
-
-			  *((uint*) (proc->tf->esp - 4)) = oldeip;
-			  *((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
-			  *((uint*) (proc->tf->esp - 12)) = proc->tf->ecx;
-			  *((uint*) (proc->tf->esp - 16)) = proc->tf->edx;
-			  *((siginfo_t*)(proc->tf->esp - 20)) = info;
-
-			  *((uint*) (proc->tf->esp - 24)) = proc->trampoline;
-
-	 		  proc->tf->esp -= 24;
-		  }
+  // Ring alarm if an alarm has been set and it reaches zero
+  if(proc && proc->pending == 1){
+		if (proc->alarm_ticks == 0) {
+			proc->pending = 0;
+			siginfo_t info = (siginfo_t) { .signum = SIGALRM };
+			uint oldeip = proc->tf->eip;
+			proc->tf->eip = (uint) proc->handlers[1];
+			*((uint*) (proc->tf->esp - 4)) = oldeip;
+			*((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
+			*((uint*) (proc->tf->esp - 12)) = proc->tf->ecx;
+			*((uint*) (proc->tf->esp - 16)) = proc->tf->edx;
+			*((siginfo_t*)(proc->tf->esp - 20)) = info;
+			*((uint*) (proc->tf->esp - 24)) = proc->trampoline;
+	 		proc->tf->esp -= 24;
+		}
 	}
 
   // Check if the process has been killed since we yielded
