@@ -102,6 +102,7 @@ extern int sys_halt(void);
 extern int sys_signal(void);
 extern int sys_alarm(void);
 extern int sys_sendsig(void);
+extern int sys_skip(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,6 +130,7 @@ static int (*syscalls[])(void) = {
 [SYS_signal]  sys_signal,
 [SYS_alarm]   sys_alarm,
 [SYS_sendsig] sys_sendsig,
+[SYS_skip]    sys_skip,
 };
 
 void

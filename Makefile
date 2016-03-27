@@ -176,7 +176,7 @@ UPROGS=\
 	_stage1_sigfpe\
 	_stage1_sigalrm\
 	_stage2\
-#	_stage3\
+	_stage3\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

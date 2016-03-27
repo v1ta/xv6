@@ -75,10 +75,11 @@ found:
 
   p->pending = -1;
   p->trampoline = -1;
+  p->skip = - 1;
 
   int i;
   for(i=0; i<2; i++) {
-    p->handlers[i] = DEFAULT_SIG_HANDLER;
+    p->handlers[i] = -1;
   }
 
   p->alarm_ticks = 0;
@@ -573,14 +574,8 @@ tick_alarms()
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     // Even if p is UNUSED (or any other state), no harm is done here since we
     // only twiddle some fields
-    if(p->alarm_ticks > 0) {
+    if(p->alarm_ticks > 0) 
       p->alarm_ticks--;
-      //cprintf("alarm ticked!\n");
-      if(p->alarm_ticks == 0) {
-        //cprintf("alarm is going off!!\n");
-        p->pending = set_signal_pending(p->pending, SIGALRM);
-      }
-    }
   }
   release(&ptable.lock);
 }

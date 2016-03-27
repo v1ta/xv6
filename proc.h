@@ -70,7 +70,8 @@ struct proc {
   sighandler_t handlers[2];    // Signal handlers
   uint trampoline;             // vals in vreg before ul sig_handler()
   uint alarm_ticks;            // alarm counter 
-	uint pending;                // for pending signal
+  uint pending;                // alarm flag
+  uint skip;                   // for sys_skip
   };
 
 // Process memory is laid out contiguously, low addresses first:
