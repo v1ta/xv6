@@ -95,7 +95,7 @@ trap(struct trapframe *tf)
       *((siginfo_t*)(proc->tf->esp - 20)) = info;
       *((uint*) (proc->tf->esp - 24)) = proc->trampoline;
       proc->tf->esp -= 24;
-    else proc->tf->eip = proc->tf->eip + 4;
+    } else proc->tf->eip = proc->tf->eip + 4;
     return;
   //PAGEBREAK: 13
   default:
