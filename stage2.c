@@ -1,7 +1,6 @@
 #include "types.h"
 #include "user.h"
 #include "signal.h"
-#include "trampoline.h"
 
 volatile int flag = 0;
 
@@ -9,13 +8,13 @@ void handle_signal(siginfo_t info)
 {
     __asm__ ("movl $0x0,%ecx\n\t");
     flag = 1;
-} 
+}
 
 int main(void)
 {
     register int ecx asm ("%ecx");
-    
-    signal(-1, (sighandler_t) trampoline);    
+
+    signal(-1, (uint) trampoline);
     signal(SIGALRM, handle_signal);
 
     ecx = 5;

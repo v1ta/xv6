@@ -109,24 +109,24 @@ sys_signal(void)
 {
   int signum = -2;
   sighandler_t  handler;
+  uint trampoline;
 
   if (argint(0,&signum) < -1){
     return -1;
-  } 
+  }
   if (signum == -1) {
-    if (argint(1, &handler) < 0) {
+    if (argint(1, &trampoline) < 0)
       return -1;
-    }
   } else if (argptr(1,(void*)&handler, sizeof(handler)) < 0) {
     return -1;
   }
   cprintf("adding signum = %d for process:\n", signum, proc->pid);
   if (signum == -1) {
-    proc->trampoline = (int *) handler;
+    proc->trampoline = trampoline;
   } else {
     proc->handlers[signum] = handler;
   }
-  return 0;
+  return signum >= 0 ? signum : 0; //need default handler?
 }
 
 void
@@ -137,4 +137,5 @@ sys_alarm(void)
     return;
   }
   proc->alarm_ticks = ticks;
+  proc->pending = 1;
 }

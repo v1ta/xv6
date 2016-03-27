@@ -137,6 +137,26 @@ trap(struct trapframe *tf)
   if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
     yield();
 
+    if(proc && proc->pending = 1){
+		  if (proc->alarmticks == 0){
+			  proc->pending = 0;
+			  struct siginfo_t info;
+			  info.signum = SIGALRM;
+			  uint oldeip = proc->tf->eip;
+			  proc->tf->eip = proc->handlers[1];
+
+			  *((uint*) (proc->tf->esp - 4)) = oldeip;
+			  *((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
+			  *((uint*) (proc->tf->esp - 12)) = proc->tf->ecx;
+			  *((uint*) (proc->tf->esp - 16)) = proc->tf->edx;
+			  *((siginfo_t*)(proc->tf->esp - 20)) = info;
+
+			  *((uint*) (proc->tf->esp - 24)) = proc->trampoline;
+
+	 		  proc->tf->esp -= 24;
+		  }
+	}
+
   // Check if the process has been killed since we yielded
   if(proc && proc->killed && (tf->cs&3) == DPL_USER)
     exit();

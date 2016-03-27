@@ -29,6 +29,7 @@ int halt(void);
 int signal(int, void (*sighandler_t)(siginfo_t));
 void alarm(int);
 int sendsig(int pid, int signum);
+
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);
@@ -42,3 +43,4 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+void trampoline(void);

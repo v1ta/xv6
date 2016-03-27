@@ -104,8 +104,15 @@ memmove(void *vdst, void *vsrc, int n)
     *dst++ = *src++;
   return vdst;
 }
-/*
-int alarm(int time) {
-  return sigalarm(time);
+
+void 
+trampoline(void){
+	__asm__ (
+    "movl 0x8(%ebp),%edx\n\t
+    movl 0xc(%ebp),%ecx\n\t
+    movl 0x10(%ebp),%eax\n\t
+    add $0x14,%ebp\n\t
+    movl %ebp,%esp\n\t
+    ret\n\t"
+  );
 }
-*/
