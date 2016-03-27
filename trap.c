@@ -84,21 +84,18 @@ trap(struct trapframe *tf)
     break;
   case T_DIVIDE:
     ;
-    siginfo_t info = { .signum = SIGFPE };
-    uint oldeip = proc->tf->eip;
-    if (proc->skip == 1) {
-      proc->tf->eip = proc->tf->eip + 4;
-      return;
-    }
-    proc->tf->eip = (uint) proc->handlers[0];
-    *((uint*) (proc->tf->esp - 4)) = oldeip;
-    *((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
-    *((uint*) (proc->tf->esp - 12)) = proc->tf->ecx;
-    *((uint*) (proc->tf->esp - 16)) = proc->tf->edx;
-    *((siginfo_t*)(proc->tf->esp - 20)) = info;
-    *((uint*) (proc->tf->esp - 24)) = proc->trampoline;
-    proc->tf->esp -= 24;
-
+    if(proc->skip != 1) {
+      siginfo_t info = { .signum = SIGFPE };
+      uint oldeip = proc->tf->eip;
+      proc->tf->eip = (uint) proc->handlers[0];
+      *((uint*) (proc->tf->esp - 4)) = oldeip;
+      *((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
+      *((uint*) (proc->tf->esp - 12)) = proc->tf->ecx;
+      *((uint*) (proc->tf->esp - 16)) = proc->tf->edx;
+      *((siginfo_t*)(proc->tf->esp - 20)) = info;
+      *((uint*) (proc->tf->esp - 24)) = proc->trampoline;
+      proc->tf->esp -= 24;
+    else proc->tf->eip = proc->tf->eip + 4;
     return;
   //PAGEBREAK: 13
   default:
