@@ -137,13 +137,12 @@ trap(struct trapframe *tf)
   if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
     yield();
 
-    if(proc && proc->pending = 1){
-		  if (proc->alarmticks == 0){
+    if(proc && proc->pending == 1){
+		  if (proc->alarm_ticks == 0){
 			  proc->pending = 0;
-			  struct siginfo_t info;
-			  info.signum = SIGALRM;
+			  siginfo_t info = (siginfo_t) { .signum = SIGALRM };
 			  uint oldeip = proc->tf->eip;
-			  proc->tf->eip = proc->handlers[1];
+			  proc->tf->eip = (uint) proc->handlers[1];
 
 			  *((uint*) (proc->tf->esp - 4)) = oldeip;
 			  *((uint*) (proc->tf->esp - 8)) = proc->tf->eax;
