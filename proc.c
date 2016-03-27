@@ -8,8 +8,6 @@
 #include "spinlock.h"
 #include "signal.h"
 
-#define DEFAULT_SIG_HANDLER ((sighandler_t)0XFFFFFFFF)
-
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -72,21 +70,13 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
-
   p->pending = 0;
-/*
-  int i;
-  for(i=0; i<SIGCOUNT; ++i) {
-    p->handlers[i] = (struct sighandler_t) DEFAULT_SIG_HANDLER;
-  }
-*/
-
   p->alarm_ticks = 0;
 
   return p;
 }
 
-static uint 
+static uint
 set_signal_pending(uint curr, int signum) {
   return curr | (1 << signum);
 }
@@ -108,7 +98,7 @@ sys_sendsig(void) {
     return -1;
   }
   acquire(&ptable.lock);
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) { 
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if (p->pid == pid) {
       cprintf("found pid:%d",pid);
       p->pending = set_signal_pending(p->pending, signum);
@@ -118,7 +108,7 @@ sys_sendsig(void) {
   }
   cprintf("no process w/pid:%d",pid);
   release(&ptable.lock);
-  return -1; 
+  return -1;
 }
 
 //PAGEBREAK: 32
@@ -563,8 +553,6 @@ tick_alarms()
   acquire(&ptable.lock);
   // Iterate through all the processes and decrement their alarm ticks
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    // Even if p is UNUSED (or any other state), no harm is done here since we
-    // only twiddle some fields
     if(p->alarm_ticks > 0) {
       p->alarm_ticks--;
       //cprintf("alarm ticked!\n");

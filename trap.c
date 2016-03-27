@@ -90,8 +90,6 @@ trap(struct trapframe *tf)
     uint old_edx  = tf->edx;
     uint old_ecx  = tf->ecx;
     uint old = (int) proc->old;
-
-
     asm volatile (
       "movl %1, (%%eax)\t \n" //addr of old vals -> stack
       "movl $0, 4(%%eax)\t \n"//SIGFPE -> stack
