@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 {
 	int start = uptime();
 
+  signal(-1, (uint) trampoline);
 	signal(SIGALRM, handle_signal);
 
 	alarm(5);
@@ -26,6 +27,6 @@ int main(int argc, char *argv[])
 	while(!flag && uptime() < start + 1000);
 
 	printf(1, "TEST FAILED: no signal sent.\n");
-	
+
 	exit();
 }

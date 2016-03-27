@@ -105,7 +105,7 @@ memmove(void *vdst, void *vsrc, int n)
   return vdst;
 }
 
-void 
+void
 trampoline(void){
-	__asm__ ("movl 0x8(%ebp),%edx\n\t movl 0xc(%ebp),%ecx\n\t movl 0x10(%ebp),%eax\n\t add $0x14,%ebp\n\t movl %ebp,%esp\n\tret\n\t");
+	__asm__ ("movl 0x8(%ebp),%edx\n\t    movl 0xc(%ebp),%ecx\n\t  movl 0x10(%ebp),%eax\n\t add $0x14,%ebp\n\t movl %ebp,%esp\n\t ret\n\t");
 }
