@@ -8,8 +8,6 @@
 #include "spinlock.h"
 #include "signal.h"
 
-#define DEFAULT_SIG_HANDLER ((sighandler_t)0XFFFFFFFF)
-
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -78,7 +76,7 @@ found:
 
   int i;
   for(i=0; i<2; i++) {
-    p->handlers[i] = DEFAULT_SIG_HANDLER;
+    p->handlers[i] = -1;
   }
 
   p->alarm_ticks = 0;
@@ -89,15 +87,6 @@ found:
 static uint
 set_signal_pending(uint curr, int signum) {
   return curr | (1 << signum);
-}
-
-static int
-pending_signal(uint curr, int signum) {
-  return curr & (1 << signum);
-}
-
-static uint clear_pending(uint curr, int signum) {
-  return curr & ~(1 << signum);
 }
 
 sys_sendsig(void) {
