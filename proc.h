@@ -69,7 +69,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   sighandler_t handlers[2];    // Signal handlers
   int *old;                    // vals in vreg before ul sig_handler()
-  int alarm_ticks;
+  int alarm_ticks;             // alarm counter
 	uint pending;                // for pending signal
   };
 
