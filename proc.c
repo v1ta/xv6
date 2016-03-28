@@ -8,8 +8,6 @@
 #include "spinlock.h"
 #include "signal.h"
 
-#define DEFAULT_SIG_HANDLER ((sighandler_t)0XFFFFFFFF)
-
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -90,15 +88,6 @@ found:
 static uint
 set_signal_pending(uint curr, int signum) {
   return curr | (1 << signum);
-}
-
-static int
-pending_signal(uint curr, int signum) {
-  return curr & (1 << signum);
-}
-
-static uint clear_pending(uint curr, int signum) {
-  return curr & ~(1 << signum);
 }
 
 sys_sendsig(void) {
@@ -308,37 +297,6 @@ default_handler(int pid) {
   cprintf("default handler for process: %d\n", pid);
 }
 
-// Old way of sending the alarm (pre stage 2)
-void
-register_signal(sighandler_t sighandler, int signum) {
-    cprintf("loading stack...");
-    uint old_eip  = proc->tf->eip +4;
-    uint old_esp  = proc->tf->esp;
-    uint old_eax  = proc->tf->eax;
-    uint old_edx  = proc->tf->edx;
-    uint old_ecx  = proc->tf->ecx;
-    uint trampoline = (uint) proc->trampoline;
-
-    asm volatile (
-      "movl %1, (%%eax)\t \n" //addr of old vals -> stack
-      "movl $1, 4(%%eax)\t \n"//SIGALRM -> stack
-      "movl %2, 8(%%eax)\t \n"//edx -> stack
-      "movl %3, 12(%%eax)\t \n"//ecx -> stack
-      "movl %4, 16(%%eax)\t \n"//eax -> stack
-      "movl %5, 20(%%eax)\t \n"//old eip -> stack
-      "addl $24, %%eax\t \n" //grow stack
-      :  :
-      "r" (old_esp),
-      "r" (trampoline),
-      "r" (old_edx),
-      "r" (old_ecx),
-      "r" (old_eax),
-      "r" (old_eip)
-    );
-    proc->tf->eip = (uint)sighandler;
-}
-
-
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -369,21 +327,6 @@ scheduler(void)
       proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      /*check for signals
-      for(i = 0; i < 2; i++) {
-        if (pending_signal(p->pending, i)) {
-          cprintf("found signal=%d",i);
-          p->pending = clear_pending(p->pending, i);
-          if (p->handlers[i] != DEFAULT_SIG_HANDLER) {
-            cprintf("registering signal SIGNUM=%d", i);
-            register_signal(p->handlers[i], i);
-            p->pending = clear_pending(p->pending, i);
-          } else {
-            default_handler(proc->pid);
-          }
-        }
-      }
-      */
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
 

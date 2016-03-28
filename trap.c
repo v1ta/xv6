@@ -124,7 +124,12 @@ trap(struct trapframe *tf)
   if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
     yield();
 
+  // Check if the process has been killed since we yielded
+  if(proc && proc->killed && (tf->cs&3) == DPL_USER)
+    exit();
+
   // Ring alarm if an alarm has been set and it reaches zero
+  // Not sure if this is the "correct" place to put this, but it works
   if(proc && proc->pending == 1){
 		if (proc->alarm_ticks == 0) {
 			proc->pending = 0;
@@ -140,8 +145,4 @@ trap(struct trapframe *tf)
 	 		proc->tf->esp -= 24;
 		}
 	}
-
-  // Check if the process has been killed since we yielded
-  if(proc && proc->killed && (tf->cs&3) == DPL_USER)
-    exit();
 }
