@@ -307,36 +307,6 @@ default_handler(int pid) {
   cprintf("default handler for process: %d\n", pid);
 }
 
-void
-register_signal(sighandler_t sighandler, int signum) {
-    cprintf("loading stack...");
-    uint old_eip  = proc->tf->eip +4;
-    uint old_esp  = proc->tf->esp;
-    uint old_eax  = proc->tf->eax;
-    uint old_edx  = proc->tf->edx;
-    uint old_ecx  = proc->tf->ecx;
-    uint trampoline = (uint) proc->trampoline;
-
-    asm volatile (
-      "movl %1, (%%eax)\t \n" //addr of old vals -> stack
-      "movl $1, 4(%%eax)\t \n"//SIGALRM -> stack
-      "movl %2, 8(%%eax)\t \n"//edx -> stack
-      "movl %3, 12(%%eax)\t \n"//ecx -> stack
-      "movl %4, 16(%%eax)\t \n"//eax -> stack
-      "movl %5, 20(%%eax)\t \n"//old eip -> stack
-      "addl $24, %%eax\t \n" //grow stack
-      :  :
-      "r" (old_esp),
-      "r" (trampoline),
-      "r" (old_edx),
-      "r" (old_ecx),
-      "r" (old_eax),
-      "r" (old_eip)
-    );
-    proc->tf->eip = (uint)sighandler;
-}
-
-
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -367,21 +337,6 @@ scheduler(void)
       proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      /*check for signals
-      for(i = 0; i < 2; i++) {
-        if (pending_signal(p->pending, i)) {
-          cprintf("found signal=%d",i);
-          p->pending = clear_pending(p->pending, i);
-          if (p->handlers[i] != DEFAULT_SIG_HANDLER) {
-            cprintf("registering signal SIGNUM=%d", i);
-            register_signal(p->handlers[i], i);
-            p->pending = clear_pending(p->pending, i);
-          } else {
-            default_handler(proc->pid);
-          }
-        }
-      }
-      */
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
 
@@ -571,16 +526,8 @@ tick_alarms()
   acquire(&ptable.lock);
   // Iterate through all the processes and decrement their alarm ticks
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    // Even if p is UNUSED (or any other state), no harm is done here since we
-    // only twiddle some fields
-    if(p->alarm_ticks > 0) {
+    if(p->alarm_ticks > 0)
       p->alarm_ticks--;
-      //cprintf("alarm ticked!\n");
-      if(p->alarm_ticks == 0) {
-        //cprintf("alarm is going off!!\n");
-        p->pending = set_signal_pending(p->pending, SIGALRM);
-      }
-    }
   }
   release(&ptable.lock);
 }

@@ -120,7 +120,7 @@ sys_signal(void)
   } else if (argptr(1,(void*)&handler, sizeof(handler)) < 0) {
     return -1;
   }
-  cprintf("adding signum = %d for process:\n", signum, proc->pid);
+  //cprintf("adding signum = %d for process:\n", signum, proc->pid);
   if (signum == -1) {
     proc->trampoline = trampoline;
   } else {
