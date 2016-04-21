@@ -1,6 +1,6 @@
 // Segments in proc->gdt.
 #define NSEGS     7
-
+#include "spinlock.h" // see piazza post 
 // Per-CPU state
 struct cpu {
   uchar id;                    // Local APIC ID; index into cpus[] below
@@ -66,9 +66,10 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  void u_stack;                // User stack 
-  void ret_val;                // Thread return value
+  void *u_stack;               // User stack 
+  void *ret_val;               // Thread return value
   int thread;                  // thread flag
+  mutex mtable[32]             // mutex table
 };
 
 // Process memory is laid out contiguously, low addresses first:

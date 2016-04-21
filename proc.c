@@ -20,6 +20,90 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+int 
+join (int pid, void **stack, void **retval) {
+  struct proc *p;
+  int children;
+
+  acquire(&ptable.lock);
+
+  while(){
+    children = 0;
+
+    p = ptable.proc;
+
+    while(p < &ptable.proc[NPROC]) {
+      if (p->parent == proc) {
+        children = 1;
+
+        if (p->state == ZOMBIE && p->pid == pid) {
+          kfree(p->kstack);
+          p->kstack = 0;
+          p->state = UNUSED;
+          p->pid = 0;
+          p->parent = 0;
+          p->name[0] = 0;
+          p->killed = 0;
+          release(&ptable.lock);
+          *retval = p->retval;
+          return pid;
+        }
+      }
+      p++;
+    }
+
+    if (!children || proc->killed) {
+      release(&ptable.lock);
+      return -1;
+    }
+
+    sleep(proc, &ptable.lock);
+  }
+}
+
+int 
+clone(void *(*func) (void *), void *arg, void *stack){
+  int i, pid;
+  struct proc *np;
+
+  if ((np = allocproc()) == 0) return -1;
+
+  np->sz = proc->sz;
+  *np->tf = *proc->tf;
+  np->pgdir = proc->pgdir;
+  np->isThread = 1;
+  
+  if (proc->isThread != 1) np->parent = proc;
+  else np->parent = proc->parent;
+
+  np->tf->eax = 0;
+  np->tf->eip = (int) func;
+  np->userStack = stack;
+  np->tf->esp = (int)stack + 4092;
+  *((int *)(np->tf->esp)) = (int) arg;
+  *((int *)(np->tf->esp - 4)) = 0xFFFFFFFF;
+  np->tf->esp = np->tf->esp - 4;
+  
+
+  for(i = 0; i < NOFILE; i++) {
+    if(proc->ofile[i]) np->ofile[i] = filedup(proc->ofile[i]);
+  }:
+
+  np->cwd = idup(proc->cwd);
+  safestrcpy(np->name, proc->name, sizeof(proc->name));
+  pid = np->pid;
+  acquire(&ptable.lock);
+  np->state = RUNNABLE;
+  
+  for(i = 0; i < 32; i++) {
+    np->mtable[i] = proc->mtable[i];
+  }
+  
+  release(&ptable.lock);
+  
+  return pid;
+}
+
 void
 pinit(void)
 {
