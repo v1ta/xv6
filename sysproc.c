@@ -106,17 +106,36 @@ sys_halt(void)
 int
 sys_clone(void)
 { 
+  int fn, arg, stack;
 
+  if (argint(0, &fn) < 0) return -1;
+  if (argint(1, &arg) < 0) return -1;
+  if (argint(2, &stack) < 0) return -1;
+
+  return clone((void *) fn, (void *) arg, (void *) stack);
 }
 
 int
 sys_join(void)
 {
+  int pid, stack, ret;
 
+  if (argint(0, &pid) < 0) return -1;
+  if (argint(1, &stack) < 0) return -1;
+  if (argint(2, &ret) < 0) return -1;
+
+  return join(pid, (void **) stack, (void **) ret);
 }
 
 int
 sys_texit(void)
 {
+  int ret;
 
+  if (argint(0, &ret) < 0) return -1;
+
+  proc->retval = (void *)retval;
+  exit();
+
+  return 0;
 }
