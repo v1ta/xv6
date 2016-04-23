@@ -1,12 +1,6 @@
 #ifndef SPINLOCK_H
 #define SPINLOCK_H
 // Mutual exclusion locked.
-typedef struct {
-  int mid, active, locked;
-  struct spinlock sl;
-  void *chan;
-} mutex
-
 struct spinlock {
   uint locked;       // Is the lock held?
   
@@ -16,5 +10,11 @@ struct spinlock {
   uint pcs[10];      // The call stack (an array of program counters)
                      // that locked the lock.
 };
+
+typedef struct {
+  int mid, active, locked;
+  struct spinlock sl;
+  void *chan;
+} mutex;
 
 #endif

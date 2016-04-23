@@ -28,7 +28,7 @@ int clone(void *(*func) (void *), void *arg, void *stack);
 int join(int pid, void **stack, void **retval);
 int texit(void *retval);
 int mutex_init(void);
-int mutex_destory(int mutex_id);
+int mutex_destroy(int mutex_id);
 int mutex_lock(int mutex_id);
 int mutex_unlock(int mutex_id);
 

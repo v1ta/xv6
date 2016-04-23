@@ -69,7 +69,7 @@ struct proc {
   void *u_stack;               // User stack 
   void *ret_val;               // Thread return value
   int thread;                  // thread flag
-  mutex mtable[32]             // mutex table
+  mutex mtable[32];            // m table
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -77,3 +77,6 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+
+int clone(void *(*func) (void *), void *arg, void *stack);
+int join(int pid, void **stack, void **retval);

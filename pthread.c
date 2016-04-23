@@ -19,17 +19,20 @@ pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_rout
 }
 
 int 
-pthread_join(pthread_t thread, void **retval)
+pthread_join(pthread_t thread, void **ret)
 {
-  int val = join(thread.pid, (void **) thread.stack, retval);
-  free(thread.stack); 
+  int val = join(thread.pid, (void **) thread.stack, ret);
+
+  free(thread.stack);
+
   return val;
 }
 
 int 
-pthread_exit(void *retval)
+pthread_exit(void *ret)
 {
-  texit(retval);
+  texit(ret);
+
   return 0;
 }
 

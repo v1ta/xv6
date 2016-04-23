@@ -62,13 +62,14 @@ sys_sleep(void)
   int n;
   uint ticks0;
   
-  if(argint(0, &n) < 0)
-    return -1;
+  if(argint(0, &n) < 0) return -1;
+
   acquire(&tickslock);
   ticks0 = ticks;
   while(ticks - ticks0 < n){
     if(proc->killed){
       release(&tickslock);
+
       return -1;
     }
     sleep(&ticks, &tickslock);
@@ -108,9 +109,10 @@ sys_clone(void)
 { 
   int fn, arg, stack;
 
-  if (argint(0, &fn) < 0) return -1;
-  if (argint(1, &arg) < 0) return -1;
-  if (argint(2, &stack) < 0) return -1;
+  //error checking
+  if (argint(0, &fn) < 0)  return -1;
+  else if (argint(1, &arg) < 0)  return -1;
+  else if (argint(2, &stack) < 0)  return -1;
 
   return clone((void *) fn, (void *) arg, (void *) stack);
 }
@@ -120,9 +122,10 @@ sys_join(void)
 {
   int pid, stack, ret;
 
-  if (argint(0, &pid) < 0) return -1;
-  if (argint(1, &stack) < 0) return -1;
-  if (argint(2, &ret) < 0) return -1;
+  //error checking
+  if (argint(0, &pid) < 0)  return -1;
+  else if (argint(1, &stack) < 0)  return -1;
+  else if (argint(2, &ret) < 0)  return -1;
 
   return join(pid, (void **) stack, (void **) ret);
 }
@@ -134,8 +137,81 @@ sys_texit(void)
 
   if (argint(0, &ret) < 0) return -1;
 
-  proc->retval = (void *)retval;
+  proc->ret_val = (void *)ret;
   exit();
 
   return 0;
+}
+
+int 
+sys_mutex_unlock(void)
+{
+  int id;
+   
+  //error checking 
+  if (argint(0,&id)<0)  return -1;
+  else if (id>31 || id<0)  return -1;
+  else if (proc->mtable[id].active == 0)  return -1;
+  
+  acquire(&(proc->parent->mtable[id].sl));
+  
+  proc->parent->mtable[id].locked = 0;
+  wakeup(proc->parent->mtable[id].chan);
+  release(&(proc->parent->mtable[id].sl));
+   
+  return 0;
+}
+
+int 
+sys_mutex_destroy(void) 
+{
+  int id;
+
+  // error checking 
+  if (argint(0,&id)<0) return -1;
+  else if (id>31 || id<0) return -1;
+  else if (proc->mtable[id].locked == 1) return -1;
+  else if (proc->mtable[id].active == 0) return -1;
+    
+  proc->mtable[id].active = 0;
+  return 0;
+}
+
+int 
+sys_mutex_lock(void)
+{
+  int mutex_id;
+  
+  //error checking 
+  if (argint(0,&mutex_id)<0) return -1; 
+  else if (mutex_id>31 || mutex_id<0) return -1;
+  else if (proc->mtable[mutex_id].active == 0)  return -1;
+
+  acquire(&(proc->parent->mtable[mutex_id].sl));
+
+  while(proc->parent->mtable[mutex_id].locked == 1) {
+    sleep(proc->parent->mtable[mutex_id].chan,&(proc->parent->mtable[mutex_id].sl));
+  }
+  
+  proc->parent->mtable[mutex_id].locked = 1;
+  release(&(proc->parent->mtable[mutex_id].sl));
+
+  return 0;   
+}
+
+int 
+sys_mutex_init(void)
+{
+  int i;
+
+  for(i = 0; i < 32; i++) {
+    if (proc->mtable[i].active == 0){
+      proc->mtable[i].active = 1;
+      proc->mtable[i].mid = i;
+      proc->mtable[i].chan = &(proc->mtable[i]);
+
+      return i;
+    }
+  }
+  return -1;
 }
